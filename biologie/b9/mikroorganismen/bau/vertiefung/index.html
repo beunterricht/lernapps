@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>1.1.1 Vertiefung – Leeuwenhoeks kleine Tierchen</title>
+<style>*,*::before,*::after{box-sizing:border-box}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+
+<style>
+:root{
+  color-scheme:light;
+  --forest:#2C5F2D; --forest-d:#224A23; --moss:#97BC62; --moss-d:#5E8434; --rust:#D9782D; --rust-d:#A8551B;
+  --ink:#1E2A1E; --muted:#56644F; --bg:#F6F8F1; --card:#EEF5E6; --surface:#FFFFFF; --line:#D3DFC6;
+  --info-bg:#FFFFFF; --info-line:#BFD3BF;
+  --ueb-bg:#FDF3EA; --ueb-line:#F0CFB2;
+  --merke-bg:#F1F7E6; --merke-line:#C9DDA8;
+  --hist:#8A6A44; --hist-bg:#F5EFE5; --hist-line:#E0D2BD;
+  --ok:#2E7D32; --ok-bg:#E4F2E1; --bad:#B23A2A; --bad-bg:#FBE6E1;
+  --stain:#2B4C9B;
+  --f-head:Cambria,"Cambria Math",Georgia,"Times New Roman",serif;
+  --f-body:Calibri,Carlito,"Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.5;margin:0;padding-inline:16px;padding-block:0 48px}
+.wrap{max-width:1080px;margin:0 auto}
+h1,h2,h3{font-family:var(--f-head);color:var(--forest-d);line-height:1.15;margin:0;text-wrap:balance}
+p{margin:0}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--rust);outline-offset:2px;border-radius:6px}
+header.top{padding-block:26px 14px;display:grid;gap:10px}
+.eyebrow{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+h1{font-size:clamp(30px,5vw,48px)}
+.lead{max-width:66ch;color:var(--muted);font-size:18px}
+
+/* Feldtypen */
+.field{position:relative;border:1px solid var(--info-line);background:var(--info-bg);border-radius:14px;padding:14px 16px 14px 60px;display:grid;gap:8px}
+.field > .badge{position:absolute;left:14px;top:13px}
+.badge{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;color:#fff;flex:0 0 auto}
+.badge svg{width:18px;height:18px}
+.field .ftype{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.f-info .badge{background:var(--forest)} .f-info .ftype{color:var(--forest)}
+.f-ueb{background:var(--ueb-bg);border-color:var(--ueb-line)} .f-ueb .badge{background:var(--rust)} .f-ueb .ftype{color:var(--rust-d)}
+.f-merke{background:var(--merke-bg);border-color:var(--merke-line)} .f-merke .badge{background:var(--moss-d)} .f-merke .ftype{color:var(--moss-d)}
+.f-hist{background:var(--hist-bg);border-color:var(--hist-line)} .f-hist .badge{background:var(--hist)} .f-hist .ftype{color:var(--hist)}
+.field h3{font-size:20px}
+.op{font-weight:700}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:14px;color:var(--muted)}
+.legend span{display:inline-flex;gap:6px;align-items:center}
+.legend .badge{width:22px;height:22px}
+.legend .badge svg{width:13px;height:13px}
+
+/* Fortschritt & Navigation */
+.progress-wrap{display:grid;gap:6px;margin-block:10px 8px}
+.progress-row{display:flex;justify-content:space-between;font-size:14px;color:var(--muted);font-weight:700}
+.progress{height:10px;background:var(--line);border-radius:99px;overflow:hidden}
+.progress > div{height:100%;background:linear-gradient(90deg,var(--forest),var(--moss));transition:width .4s}
+nav.stations{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:8px;border-bottom:1px solid var(--line);margin-bottom:18px}
+.st-list{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px}
+.st-btn{flex:0 0 auto;display:flex;gap:10px;align-items:center;border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 16px 6px 6px;cursor:pointer;text-align:left}
+.st-btn:hover{border-color:var(--forest)}
+.st-btn[aria-selected="true"]{background:var(--forest);border-color:var(--forest);color:#fff}
+.st-num{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:700;background:var(--card);color:var(--forest);border:1.5px solid var(--moss)}
+.st-btn[aria-selected="true"] .st-num{background:#fff}
+.st-btn.done .st-num{background:var(--moss-d);border-color:var(--moss-d);color:#fff}
+.st-name{font-weight:700;font-size:15px;line-height:1.15}
+.st-sub{font-size:12.5px;opacity:.8}
+
+/* Stationen */
+.station{display:grid;gap:16px}
+.st-head{display:grid;gap:6px}
+.st-head h2{font-size:clamp(24px,3.4vw,32px)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;display:grid;gap:14px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+@media (max-width:820px){.grid2{grid-template-columns:1fr}}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{border:1.5px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 14px;cursor:pointer;font-weight:700;font-size:15.5px}
+.btn:hover:not(:disabled){border-color:var(--forest)}
+.btn.primary{background:var(--forest);border-color:var(--forest);color:#fff}
+.btn.primary:hover:not(:disabled){background:var(--forest-d)}
+.btn[aria-pressed="true"]{background:var(--forest);border-color:var(--forest);color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.fb{padding:10px 14px;border-radius:10px;background:var(--surface);border:1px solid var(--line);font-size:16px}
+.fb:empty{display:none}
+.fb.ok{background:var(--ok-bg);border-color:var(--ok)}
+.fb.bad{background:var(--bad-bg);border-color:var(--bad)}
+.muted{color:var(--muted)} .small{font-size:14.5px}
+.locked{opacity:.5;pointer-events:none;filter:grayscale(.4)}
+.lockhint{font-size:14px;color:var(--muted);font-style:italic}
+input[type=number]{font:inherit;width:120px;padding:7px 10px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink)}
+input[type=range]{width:100%;accent-color:var(--forest)}
+.formula{font-family:var(--f-head);font-size:18px;background:var(--surface);border:1px dashed var(--moss);border-radius:10px;padding:8px 12px;display:inline-block}
+.done-chip{display:inline-flex;align-items:center;gap:6px;background:var(--ok-bg);color:var(--ok);font-weight:700;border-radius:999px;padding:3px 12px;font-size:14px}
+.task{display:grid;gap:8px;border-top:1px dashed var(--ueb-line);padding-top:10px}
+.task:first-of-type{border-top:0;padding-top:0}
+.tnum{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--rust);color:#fff;font-size:13px;font-weight:700;margin-right:6px}
+
+/* Station 1: Rechner */
+.eye{display:grid;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px}
+.barbox{position:relative;height:34px;background:#F3F6EE;border-radius:8px;overflow:hidden}
+.barbox .img{position:absolute;left:0;top:7px;height:20px;background:var(--stain);border-radius:0 10px 10px 0;transition:width .15s}
+.barbox .thr{position:absolute;top:0;bottom:0;width:2px;background:var(--rust)}
+.barbox .thrlbl{position:absolute;top:0;font-size:12px;color:var(--rust-d);font-weight:700;padding-left:4px}
+.verdict{font-weight:700}
+.bigval{font-family:var(--f-head);font-size:22px;color:var(--forest-d)}
+
+/* Station 2: Formen */
+.forms{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.formcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px;display:grid;gap:4px;text-align:center;font-size:15px}
+.formcard svg{width:100%;height:auto;max-width:100%}
+.formcard b{font-family:var(--f-head);font-size:17px;color:var(--forest-d)}
+.builder{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:14px;align-items:start}
+@media (max-width:760px){.builder{grid-template-columns:1fr}}
+.preview{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px}
+.preview svg{width:100%;height:auto;display:block}
+.ctrl{display:grid;gap:6px}
+.ctrl b{font-size:14.5px;color:var(--muted)}
+.order{font-family:var(--f-head);font-size:19px;color:var(--rust-d)}
+.idgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.slot{background:var(--surface);border:2px dashed var(--line);border-radius:12px;padding:6px;display:grid;gap:4px;cursor:pointer;text-align:center}
+.slot svg{width:100%;height:auto}
+.slot .ans{min-height:26px;font-weight:700;font-size:15px}
+.slot.ok{border-style:solid;border-color:var(--ok);cursor:default}
+.slot.ready{border-color:var(--rust)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 14px;font-weight:700;cursor:pointer;font-size:15px}
+.chip[aria-pressed="true"]{border-color:var(--rust);box-shadow:0 0 0 3px rgba(217,120,45,.25)}
+.chip.used{opacity:.35;cursor:default}
+.shake{animation:shake .45s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+
+/* Station 3: Labor */
+.steps{display:grid;gap:6px}
+.stepbtn{display:flex;gap:10px;align-items:flex-start;text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 12px;cursor:pointer;font-size:15.5px}
+.stepbtn .n{flex:0 0 26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--card);color:var(--forest);font-weight:700;font-size:14px;border:1.5px solid var(--moss)}
+.stepbtn.picked{opacity:.4;cursor:default}
+.seq .stepbtn{cursor:default}
+.seq .stepbtn .n{background:var(--forest);color:#fff;border-color:var(--forest)}
+.scope{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:center}
+@media (max-width:760px){.scope{grid-template-columns:1fr;justify-items:center}}
+.ocular{width:min(360px,80vw);aspect-ratio:1;border-radius:50%;overflow:hidden;background:#111;border:10px solid #2A2F2A;box-shadow:inset 0 0 30px rgba(0,0,0,.6);position:relative;max-width:100%}
+.ocular canvas{width:100%;height:100%;display:block;border-radius:50%}
+.objs{display:flex;gap:6px;flex-wrap:wrap}
+.magtxt{font-family:var(--f-head);font-size:19px;color:var(--forest-d)}
+.checks{display:grid;gap:6px}
+.checks label{display:flex;gap:10px;align-items:center;background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:8px 12px;cursor:pointer}
+.checks input{width:18px;height:18px;accent-color:var(--forest)}
+.flaws{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.flaw{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px;display:grid;gap:8px;justify-items:center}
+.flaw .lens{width:162px;height:162px;border-radius:50%;border:6px solid #2A2F2A;background:#111;overflow:hidden}
+.flaw canvas{width:150px;height:150px;display:block}
+.flaw .opts{display:grid;gap:6px;width:100%}
+.flaw .opts button{text-align:left;font-size:14.5px;padding:6px 10px}
+.flaw.ok{border-color:var(--ok)}
+
+/* Station 4 */
+.q{display:grid;gap:10px}
+.qtext{font-size:19px;font-weight:700}
+.opts{display:grid;gap:8px}
+.opt{border:1.5px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 14px;text-align:left;cursor:pointer;font-size:16px}
+.opt:hover:not(:disabled){border-color:var(--forest)}
+.opt.right{border-color:var(--ok);background:var(--ok-bg)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-bg)}
+.opt:disabled{cursor:default;color:var(--ink)}
+.stamp{display:inline-block;font-family:var(--f-head);font-weight:700;font-size:22px;color:var(--forest);border:3px double var(--forest);border-radius:8px;padding:6px 14px;transform:rotate(-3deg)}
+.foot{margin-top:26px;font-size:13.5px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+<script>
+/* SCORM-1.2-Anbindung für mebis (Moodle). Ohne Lernplattform läuft die Seite normal weiter. */
+(function(){
+  var API=null,on=false,state={},timer=null,STATIONS=4,PERSIST=['lw-done','lw-tab','mo-best'];
+  function find(w){var n=0;try{while(w&&!w.API&&w.parent&&w.parent!==w&&n<12){n++;w=w.parent}return w&&w.API?w.API:null}catch(e){return null}}
+  API=find(window);if(!API&&window.opener)API=find(window.opener);
+  function g(k){try{return API.LMSGetValue(k)}catch(e){return ''}}
+  function s(k,v){try{return API.LMSSetValue(k,String(v))}catch(e){}}
+  function commit(){try{API.LMSCommit('')}catch(e){}}
+  if(API){try{on=String(API.LMSInitialize(''))==='true'}catch(e){on=false}}
+  if(on){
+    try{var sd=g('cmi.suspend_data');if(sd)state=JSON.parse(sd)||{}}catch(e){state={}}
+    var st=g('cmi.core.lesson_status');
+    if(!st||st==='not attempted'){s('cmi.core.lesson_status','incomplete');commit()}
+  }
+  function save(){
+    if(!on)return;clearTimeout(timer);
+    timer=setTimeout(function(){
+      var o={};PERSIST.forEach(function(k){if(k in state)o[k]=state[k]});
+      var j=JSON.stringify(o);if(j.length>4000){delete o['mo-seen'];j=JSON.stringify(o)}
+      s('cmi.suspend_data',j);commit();
+    },400);
+  }
+  window.MO_STORE={
+    get:function(k,d){if(on&&(k in state))return state[k];try{var v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch(e){return d}},
+    set:function(k,v){if(PERSIST.indexOf(k)>-1){state[k]=v;save()}try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+  };
+  window.MO_SCORM={
+    progress:function(done){if(!on)return;var n=Object.keys(done||{}).length;if(n>=STATIONS){s('cmi.core.lesson_status','completed');commit()}},
+    score:function(ok,total){if(!on)return;var raw=Math.round(ok/total*100),best=state['mo-best']||0;if(raw>=best){state['mo-best']=raw;s('cmi.core.score.min',0);s('cmi.core.score.max',100);s('cmi.core.score.raw',raw);save();commit()}}
+  };
+  var finished=false;
+  function finish(){if(!on||finished)return;finished=true;var o={};PERSIST.forEach(function(k){if(k in state)o[k]=state[k]});s('cmi.suspend_data',JSON.stringify(o));s('cmi.core.exit','suspend');commit();try{API.LMSFinish('')}catch(e){}}
+  window.addEventListener('pagehide',finish);window.addEventListener('beforeunload',finish);
+})();
+</script>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="eyebrow">Biologie 9 · 1.1.1 Der Bau von Mikroorganismen · Vertiefung</div>
+  <h1>Leeuwenhoeks kleine Tierchen</h1>
+  <p class="lead">Du bist schon fertig? Dann hast du jetzt einen besonderen Auftrag: Du prüfst als Gutachterin oder Gutachter einen der berühmtesten Briefe der Biologie.</p>
+</header>
+
+<div class="field f-hist">
+  <span class="badge" aria-hidden="true" data-icon="hist"></span>
+  <span class="ftype">Hintergrund · Delft, 1683</span>
+  <p>Antoni van Leeuwenhoek war Tuchhändler in der niederländischen Stadt Delft. In seiner Freizeit schliff er winzige Glaslinsen und baute daraus einfache Mikroskope. Damit untersuchte er alles, was ihm unter die Finger kam: Regenwasser, Pfefferwasser, Blut und sogar den Belag seiner eigenen Zähne. Seine Beobachtungen schickte er in Briefen an die Royal Society, eine Gelehrtengesellschaft in London.</p>
+  <p>Als er 1676 von unzähligen winzigen „Tierchen“ in Pfefferwasser berichtete, glaubte man ihm zunächst nicht. Erst als der englische Forscher Robert Hooke die Beobachtung 1677 wiederholen konnte, nahm man Leeuwenhoek ernst. 1683 beschrieb er in einem weiteren Brief Tierchen aus seinem Zahnbelag: manche stäbchenförmig, manche kugelig, manche schraubenförmig gewunden. Heute wissen wir: Er hatte als einer der Ersten Bakterien gesehen.</p>
+  <p><b>Dein Auftrag:</b> Prüfe Leeuwenhoeks Angaben mit drei Prüfaufträgen und schreibe am Ende ein Gutachten für die Royal Society.</p>
+</div>
+
+<div class="legend" aria-label="Feldtypen">
+  <span><span class="badge" style="background:var(--hist)" data-icon="hist"></span>Hintergrund</span>
+  <span><span class="badge" style="background:var(--forest)" data-icon="info"></span>Info</span>
+  <span><span class="badge" style="background:var(--rust)" data-icon="ueb"></span>Übung</span>
+  <span><span class="badge" style="background:var(--moss-d)" data-icon="merke"></span>Merke</span>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-row"><span>Fortschritt deines Gutachtens</span><span id="progTxt">0 von 4 Prüfaufträgen erledigt</span></div>
+  <div class="progress" aria-hidden="true"><div id="progBar" style="width:0%"></div></div>
+</div>
+<nav class="stations" aria-label="Prüfaufträge"><div class="st-list" id="stList" role="tablist"></div></nav>
+
+<main>
+<!-- ===== 1 ===== -->
+<section class="station" id="s1" data-title="Das Glas des Tuchhändlers" data-sub="Vergrößerung">
+  <div class="st-head"><h2>Prüfauftrag 1: Das Glas des Tuchhändlers</h2><p class="muted">Konnte Leeuwenhoek mit seinem einfachen Mikroskop Bakterien überhaupt erkennen?</p></div>
+  <div class="card">
+    <div class="field f-hist"><span class="badge" data-icon="hist"></span><span class="ftype">Hintergrund</span>
+      <p>Leeuwenhoeks Mikroskop war kaum größer als eine Hand: eine einzige, winzige Linse zwischen zwei Metallplättchen. Das Untersuchungsobjekt steckte er auf eine Nadel direkt vor der Linse. Dann hielt er das Gerät ganz nah vor sein Auge. Seine besten Linsen vergrößerten etwa <b>270-fach</b>.</p></div>
+    <div class="field f-info"><span class="badge" data-icon="info"></span><span class="ftype">Info</span><h3>Wie groß erscheint etwas im Mikroskop?</h3>
+      <p>Das Bild im Mikroskop ist um die Vergrößerung größer als das Objekt selbst:</p>
+      <p><span class="formula">Bildgröße = reale Größe × Vergrößerung</span></p>
+      <p>Ein Schulmikroskop hat zwei Linsensysteme: das Okular, in das du hineinschaust, und das Objektiv direkt über dem Präparat. Ihre Vergrößerungen werden multipliziert:</p>
+      <p><span class="formula">Gesamtvergrößerung = Vergrößerung des Okulars × Vergrößerung des Objektivs</span></p>
+      <p>Denke an die Einheiten: 1 mm = 1000 µm. Unser Auge kann Dinge, die kleiner als etwa <b>0,1 mm (= 100 µm)</b> sind, nicht mehr als eigenes Objekt erkennen.</p></div>
+    <div class="eye">
+      <b>Probier es aus: Wie groß erscheint ein Bakterium von 2 µm Länge?</b>
+      <label for="vSlider" class="small">Vergrößerung: <span class="bigval" id="vVal">1-fach</span></label>
+      <input type="range" id="vSlider" min="0" max="1000" value="0">
+      <div class="barbox" aria-hidden="true"><div class="img" id="vBar"></div><div class="thr" id="vThr"></div><div class="thrlbl" id="vThrLbl">Grenze des Auges: 0,1 mm</div></div>
+      <p id="vTxt" class="small"></p>
+      <p class="small muted">Vereinfachte Darstellung. Der Balken zeigt die Bildgröße bis höchstens 1 mm.</p>
+    </div>
+    <div class="field f-ueb"><span class="badge" data-icon="ueb"></span><span class="ftype">Übung</span>
+      <div class="task" id="t1a"></div>
+      <div class="task" id="t1b"></div>
+      <div class="task" id="t1c"></div>
+    </div>
+    <div class="field f-info"><span class="badge" data-icon="info"></span><span class="ftype">Info</span><h3>Warum man nicht alles sieht</h3>
+      <p>Man könnte meinen, mit immer stärkeren Linsen sähe man immer mehr. Doch Lichtmikroskope haben eine Grenze: Zwei Punkte, die weniger als etwa <b>0,2 µm</b> voneinander entfernt sind, verschwimmen zu einem einzigen Punkt. Man nennt das die <b>Auflösungsgrenze</b>. Wer darüber hinaus vergrößert, erhält nur ein größeres, aber kein schärferes Bild.</p>
+      <p>Bakterien selbst sind groß genug, um sie als Umriss zu erkennen. Feine Strukturen in ihrem Inneren, zum Beispiel Plasmide, sind aber zu klein. Sie werden erst im Elektronenmikroskop sichtbar. Das Schema der Bakterienzelle im Buch (B1) zeigt den Bau so, wie man ihn im Elektronenmikroskop betrachten kann.</p></div>
+    <div class="field f-merke" id="m1" hidden><span class="badge" data-icon="merke"></span><span class="ftype">Merke</span>
+      <p>Bildgröße = reale Größe × Vergrößerung. Beim Schulmikroskop ergibt sich die Gesamtvergrößerung aus Okular × Objektiv. Leeuwenhoeks Linse reichte aus, um Bakterien als winzige Objekte zu erkennen. Die Auflösungsgrenze des Lichtmikroskops liegt bei etwa 0,2 µm.</p></div>
+  </div>
+</section>
+
+<!-- ===== 2 ===== -->
+<section class="station" id="s2" data-title="Formen der Tierchen" data-sub="Bakterienformen" hidden>
+  <div class="st-head"><h2>Prüfauftrag 2: Formen der Tierchen</h2><p class="muted">Leeuwenhoek beschrieb stäbchenförmige, kugelige und schraubenförmige Tierchen. Gibt es diese Formen wirklich?</p></div>
+  <div class="card">
+    <div class="field f-info"><span class="badge" data-icon="info"></span><span class="ftype">Info</span><h3>Grundformen von Bakterien</h3>
+      <p>Alle Bakterien haben den gleichen Grundbauplan, den du schon kennst. Von außen sehen sie aber unterschiedlich aus. Man unterscheidet drei Grundformen:</p>
+      <div class="forms" id="formInfo"></div>
+      <p>Kugelbakterien unterscheidet man außerdem danach, wie ihre Zellen zusammenhängen. Die Namen stammen aus dem Griechischen:</p>
+      <div class="forms" id="arrInfo"></div>
+      <p class="small">Zur Erinnerung: Bakterien mit Geißeln können sich aktiv fortbewegen. Man nennt sie beweglich.</p></div>
+    <div class="field f-ueb"><span class="badge" data-icon="ueb"></span><span class="ftype">Übung</span>
+      <div class="task">
+        <p><span class="tnum">1</span><span class="op">Stelle</span> das gesuchte Bakterium mit dem Baukasten <span class="op">dar</span>. Wähle Grundform, Anordnung und Geißeln.</p>
+        <p class="order" id="buildOrder"></p>
+        <div class="builder">
+          <div class="preview" id="buildPrev"></div>
+          <div style="display:grid;gap:12px">
+            <div class="ctrl"><b>Grundform</b><div class="row" id="cShape"></div></div>
+            <div class="ctrl"><b>Anordnung (nur bei Kugelbakterien)</b><div class="row" id="cArr"></div></div>
+            <div class="ctrl"><b>Geißeln</b><div class="row" id="cFlag"></div></div>
+            <div class="row"><button class="btn primary" id="buildCheck">Prüfen</button><span class="small muted" id="buildCount"></span></div>
+          </div>
+        </div>
+        <div class="fb" id="buildFb" aria-live="polite"></div>
+      </div>
+      <div class="task" id="idTask">
+        <p><span class="tnum">2</span><span class="op">Ordne</span> jedem Bild den passenden Namen <span class="op">zu</span>. Tippe erst auf einen Namen, dann auf das Bild.</p>
+        <p class="lockhint" id="idLock">Wird nach Übung 1 freigeschaltet.</p>
+        <div class="chips" id="idChips"></div>
+        <div class="idgrid" id="idGrid"></div>
+        <div class="fb" id="idFb" aria-live="polite"></div>
+      </div>
+    </div>
+    <div class="field f-merke" id="m2" hidden><span class="badge" data-icon="merke"></span><span class="ftype">Merke</span>
+      <p>Bakterien kommen in drei Grundformen vor: Kugeln (Kokken), Stäbchen und Schrauben (Spirillen). Kokken bilden Paare (Diplokokken), Ketten (Streptokokken) oder Trauben (Staphylokokken). Leeuwenhoeks Beschreibung passt also zu echten Bakterienformen.</p></div>
+  </div>
+</section>
+
+<!-- ===== 3 ===== -->
+<section class="station" id="s3" data-title="Joghurt-Labor" data-sub="Mikroskopieren" hidden>
+  <div class="st-head"><h2>Prüfauftrag 3: Das Joghurt-Labor</h2><p class="muted">Die Royal Society glaubte erst, als jemand die Beobachtung wiederholen konnte. Das machst du jetzt auch. Zuerst übst du hier am virtuellen Mikroskop, danach mikroskopierst du im echten Versuch.</p></div>
+  <div class="card">
+    <div class="field f-hist"><span class="badge" data-icon="hist"></span><span class="ftype">Hintergrund</span>
+      <p>Zahnbelag zu mikroskopieren ist wenig appetitlich und nicht besonders hygienisch. Naturjoghurt ist eine bessere Wahl: Er enthält Millionen lebender, harmloser Bakterien. Genau genommen sind es zwei verschiedene Arten. Welche Formen sie haben, findest du selbst heraus.</p></div>
+    <div class="field f-info"><span class="badge" data-icon="info"></span><span class="ftype">Info</span><h3>So entsteht ein gefärbter Ausstrich</h3>
+      <p>Bakterien sind fast farblos und durchsichtig. Im Mikroskop heben sie sich deshalb kaum vom Hintergrund ab. Man färbt sie daher mit dem Farbstoff <b>Methylenblau</b>. Er färbt die Bakterien blau an, sodass sie sich deutlich vom hellen Hintergrund abheben.</p>
+      <p>Dafür streicht man eine sehr kleine, mit Wasser verdünnte Menge Joghurt dünn auf einem Objektträger aus. Der Ausstrich muss trocknen, bevor er kurz durch die Flamme gezogen wird. Diese Hitze klebt die Bakterien am Glas fest (<b>Hitzefixieren</b>). Erst dann kommt die Farbe darauf. Nach etwa einer Minute spült man den überschüssigen Farbstoff mit Wasser ab und lässt den Objektträger trocknen.</p>
+      <p><b>Mikroskopierregel:</b> Beginne immer mit dem kleinsten Objektiv. Das Sichtfeld ist dann groß, du findest das Präparat leichter und kannst es leichter scharf stellen. Erst danach wechselst du zum nächstgrößeren Objektiv und stellst wieder scharf.</p>
+      <p class="small"><b>Sicherheit im echten Versuch:</b> Schutzbrille tragen, Methylenblau färbt Haut und Kleidung. Vorsicht an der Brennerflamme, lange Haare zusammenbinden.</p></div>
+    <div class="field f-ueb"><span class="badge" data-icon="ueb"></span><span class="ftype">Übung</span>
+      <div class="task">
+        <p><span class="tnum">1</span><span class="op">Ordne</span> die Arbeitsschritte in der richtigen Reihenfolge. Tippe sie nacheinander an.</p>
+        <div class="grid2">
+          <div class="steps" id="stepPool"></div>
+          <div class="steps seq" id="stepSeq"><p class="small muted">Deine Reihenfolge erscheint hier.</p></div>
+        </div>
+        <div class="row"><button class="btn primary" id="stepCheck">Reihenfolge prüfen</button><button class="btn" id="stepReset">Neu beginnen</button></div>
+        <div class="fb" id="stepFb" aria-live="polite"></div>
+      </div>
+      <div class="task" id="scopeTask">
+        <p><span class="tnum">2</span><span class="op">Untersuche</span> den gefärbten Joghurt-Ausstrich mit dem virtuellen Mikroskop. Stelle bei einer Vergrößerung von mindestens 400-fach scharf.</p>
+        <p class="lockhint" id="scopeLock">Wird nach Übung 1 freigeschaltet.</p>
+        <div class="scope">
+          <div class="ocular"><canvas id="scopeCv" width="480" height="480" aria-label="Blick durch das Okular"></canvas></div>
+          <div style="display:grid;gap:12px">
+            <div class="ctrl"><b>Objektiv (Okular: 10-fach)</b><div class="objs" id="objBtns"></div></div>
+            <p class="magtxt" id="magTxt"></p>
+            <label for="focus" class="small"><b>Scharfstellen</b> (Triebrad)</label>
+            <input type="range" id="focus" min="0" max="100" value="10">
+            <div class="fb" id="scopeFb" aria-live="polite"></div>
+          </div>
+        </div>
+      </div>
+      <div class="task" id="seeTask">
+        <p><span class="tnum">3</span><span class="op">Nenne</span> die Bakterienformen, die du im Joghurt-Ausstrich erkennst. Kreuze alle passenden an.</p>
+        <p class="lockhint" id="seeLock">Wird freigeschaltet, sobald du bei mindestens 400-facher Vergrößerung scharf gestellt hast.</p>
+        <div class="checks" id="seeChecks"></div>
+        <div class="row"><button class="btn primary" id="seeCheck">Prüfen</button></div>
+        <div class="fb" id="seeFb" aria-live="polite"></div>
+      </div>
+      <div class="task" id="flawTask">
+        <p><span class="tnum">4</span>Drei Präparate aus einer anderen Klasse sind misslungen. <span class="op">Gib</span> für jedes Präparat die Fehlerquelle <span class="op">an</span>.</p>
+        <p class="lockhint" id="flawLock">Wird nach Übung 3 freigeschaltet.</p>
+        <div class="flaws" id="flaws"></div>
+      </div>
+    </div>
+    <div class="field f-merke" id="m3" hidden><span class="badge" data-icon="merke"></span><span class="ftype">Merke</span>
+      <p>Joghurt enthält stäbchenförmige Milchsäurebakterien (<i>Lactobacillus bulgaricus</i>) und kugelförmige, die in Ketten liegen (<i>Streptococcus thermophilus</i>, also Streptokokken). Für ein gutes Präparat braucht man einen dünnen Ausstrich, eine Färbung und sorgfältiges Scharfstellen von der kleinsten Vergrößerung an.</p>
+      <p><b>Jetzt bist du dran:</b> Führe den echten Versuch durch und halte deine Beobachtungen auf dem Arbeitsblatt fest. Tipp: Im echten Mikroskop wirken die Bakterien bei 400-facher Vergrößerung sehr klein. Deutlich werden sie mit dem Ölimmersions-Objektiv (1000-fach), falls eures vorhanden ist.</p></div>
+  </div>
+</section>
+
+<!-- ===== 4 ===== -->
+<section class="station" id="s4" data-title="Das Gutachten" data-sub="Selbsttest" hidden>
+  <div class="st-head"><h2>Prüfauftrag 4: Das Gutachten</h2><p class="muted">Bevor dein Gutachten an die Royal Society geht, prüft die Gesellschaft dein Wissen. Beantworte fünf Fragen. Ab vier richtigen Antworten wird dein Gutachten angenommen.</p></div>
+  <div class="card">
+    <div class="field f-ueb"><span class="badge" data-icon="ueb"></span><span class="ftype">Übung</span><div class="q" id="quiz"></div></div>
+    <div class="field f-merke" id="m4" hidden><span class="badge" data-icon="merke"></span><span class="ftype">Merke</span>
+      <p><span class="stamp">Gutachten angenommen</span></p>
+      <p>Leeuwenhoeks Angaben halten der Prüfung stand: Seine Linsen vergrößerten stark genug, und die von ihm beschriebenen Formen gibt es wirklich. Übertrage deine Ergebnisse jetzt auf das Arbeitsblatt „Gutachten“.</p></div>
+  </div>
+</section>
+</main>
+<p class="foot">Biologie 9, LehrplanPLUS Gymnasium Bayern: Lernbereich 1 (Arbeiten mit dem Lichtmikroskop, Fehlerquellen) und Lernbereich 2 (Bau von Bakterien). Vertiefung zu 1.1.1. Zeichnungen und Mikroskopbilder sind schematisch.</p>
+</div>
+
+<script>
+(function(){
+"use strict";
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+const local={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const store=window.MO_STORE||local;
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const fmt=(n,d=2)=>n.toLocaleString('de-DE',{maximumFractionDigits:d});
+const reduced=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* Icons */
+const ICONS={
+ info:'<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="5" r="1.8" fill="#fff"/><rect x="8.5" y="8.3" width="3" height="8.5" rx="1.2" fill="#fff"/></svg>',
+ ueb:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 16l1-4 8.5-8.5 3 3L8 15z" fill="#fff"/><path d="M4 16l1.2-3.6 2.4 2.4z" fill="rgba(0,0,0,.25)"/></svg>',
+ merke:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.5l2.2 4.6 5 .6-3.7 3.4 1 5-4.5-2.5-4.5 2.5 1-5L2.8 7.7l5-.6z" fill="#fff"/></svg>',
+ hist:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 3h10v2.5c0 2-2.5 3.2-3.5 4.5 1 1.3 3.5 2.5 3.5 4.5V17H5v-2.5c0-2 2.5-3.2 3.5-4.5C7.5 8.7 5 7.5 5 5.5z" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/><path d="M7.5 15.5h5l-2.5-2.2z" fill="#fff"/></svg>'
+};
+$$('[data-icon]').forEach(e=>{e.innerHTML=ICONS[e.dataset.icon];if(!e.classList.contains('badge'))e.classList.add('badge')});
+
+/* Navigation & Fortschritt */
+const sections=$$('.station');
+const done=store.get('lw-done',{});
+sections.forEach((s,i)=>{
+  const b=document.createElement('button');b.className='st-btn'+(done[s.id]?' done':'');b.id='tab-'+s.id;b.setAttribute('role','tab');
+  b.innerHTML=`<span class="st-num">${i+1}</span><span><span class="st-name">${s.dataset.title}</span><br><span class="st-sub">${s.dataset.sub}</span></span>`;
+  b.addEventListener('click',()=>show(s.id,true));$('#stList').appendChild(b);
+});
+function show(id,scroll){
+  sections.forEach(s=>s.hidden=s.id!==id);
+  $$('.st-btn').forEach(b=>b.setAttribute('aria-selected',b.id==='tab-'+id?'true':'false'));
+  store.set('lw-tab',id);
+  if(id==='s3')drawScope();
+  if(scroll){const n=$('nav.stations');const y=n.getBoundingClientRect().top+window.scrollY;if(window.scrollY>y)window.scrollTo({top:y,behavior:reduced?'auto':'smooth'})}
+}
+function prog(){const n=Object.keys(done).length;$('#progBar').style.width=(n/4*100)+'%';$('#progTxt').textContent=`${n} von 4 Prüfaufträgen erledigt`}
+function markDone(id){$('#m'+id.slice(1)).hidden=false;if(done[id])return;done[id]=true;store.set('lw-done',done);$('#tab-'+id).classList.add('done');prog();if(window.MO_SCORM)MO_SCORM.progress(done)}
+prog();
+Object.keys(done).forEach(id=>{const m=$('#m'+id.slice(1));if(m)m.hidden=false});
+const startTab=store.get('lw-tab','s1');
+
+/* ===== Station 1 ===== */
+const sl=$('#vSlider');
+function vFromSlider(){return Math.max(1,Math.round(Math.pow(10,sl.value/1000*3)))}
+function upd1(){
+  const V=vFromSlider(),img=2*V; // µm
+  $('#vVal').textContent=V+'-fach';
+  const maxUm=1000,w=Math.min(1,img/maxUm)*100;
+  $('#vBar').style.width=w+'%';$('#vThr').style.left='10%';$('#vThrLbl').style.left='10%';
+  let v;if(img<100)v='<span class="verdict" style="color:var(--bad)">zu klein für das Auge</span>';else if(img<400)v='<span class="verdict" style="color:var(--rust-d)">gerade als winziger Punkt erkennbar</span>';else v='<span class="verdict" style="color:var(--ok)">als Objekt mit Umriss erkennbar</span>';
+  $('#vTxt').innerHTML=`Bildgröße = 2 µm × ${V} = <b>${fmt(img,0)} µm</b> (= ${fmt(img/1000,3)} mm): ${v}`;
+}
+sl.addEventListener('input',upd1);upd1();
+
+const t1={};
+function numTask(el,key,html,answer,unit,tol,after){
+  el.innerHTML=`<p><span class="tnum">${key}</span>${html}</p><div class="row"><input type="number" step="any" id="in${key}" aria-label="Ergebnis"><span>${unit}</span><button class="btn primary" id="bt${key}">Prüfen</button></div><div class="fb" id="fb${key}" aria-live="polite"></div>`;
+  const check=()=>{
+    const v=parseFloat(String($('#in'+key).value).replace(',','.'));const f=$('#fb'+key);
+    if(isNaN(v)){f.className='fb bad';f.textContent='Gib eine Zahl ein.';return}
+    if(Math.abs(v-answer.v)<=tol){f.className='fb ok';f.innerHTML='<b>Richtig.</b> '+answer.e;if(!after)t1[key]=true;$('#in'+key).disabled=true;$('#bt'+key).disabled=true;if(after)after();else chk1()}
+    else{f.className='fb bad';f.innerHTML='<b>Noch nicht.</b> '+answer.h}
+  };
+  $('#bt'+key).addEventListener('click',check);$('#in'+key).addEventListener('keydown',e=>{if(e.key==='Enter')check()});
+}
+const oc=pick([10,15]),ob=pick([4,10,40]);
+numTask($('#t1a'),'1',`<span class="op">Berechne</span> die Gesamtvergrößerung eines Schulmikroskops mit einem ${oc}-fach vergrößernden Okular und einem ${ob}-fach vergrößernden Objektiv.`,{v:oc*ob,e:`${oc} × ${ob} = ${oc*ob}-fach.`,h:'Die Vergrößerungen von Okular und Objektiv werden multipliziert.'},'-fach',0.001);
+const V2=pick([400,1000]),r2=pick([2,3,4,5]),mm2=r2*V2/1000;
+numTask($('#t1b'),'2',`Ein Bakterium erscheint bei ${V2}-facher Vergrößerung ${fmt(mm2)} mm lang. <span class="op">Berechne</span> seine reale Länge in µm.`,{v:r2,e:`${fmt(mm2)} mm = ${fmt(mm2*1000,0)} µm; ${fmt(mm2*1000,0)} µm : ${V2} = ${r2} µm.`,h:'Stelle die Formel um: reale Größe = Bildgröße : Vergrößerung. Rechne die Bildgröße vorher in µm um (1 mm = 1000 µm).'},'µm',0.01);
+numTask($('#t1c'),'3',`Leeuwenhoeks Linse vergrößerte etwa 270-fach. <span class="op">Berechne</span>, wie groß ihm ein 2 µm langes Bakterium erschien (in µm).`,{v:540,e:'2 µm × 270 = 540 µm.',h:'Bildgröße = reale Größe × Vergrößerung.'},'µm',0.5,()=>{
+  const d=document.createElement('div');d.className='task';d.style.borderTop='0';
+  d.innerHTML=`<p><span class="op">Begründe</span>: Konnte Leeuwenhoek dieses Bakterium erkennen?</p><div class="opts" id="t1cOpts"></div><div class="fb" id="t1cFb" aria-live="polite"></div>`;
+  $('#t1c').appendChild(d);
+  const opts=shuffle([
+    {t:'Ja, denn 540 µm sind größer als 100 µm, die kleinste Größe, die das Auge erkennt.',ok:true},
+    {t:'Nein, denn 540 µm sind kleiner als 0,1 mm.',ok:false,h:'Rechne um: 0,1 mm = 100 µm. Ist 540 µm größer oder kleiner?'},
+    {t:'Nein, denn Bakterien kann man nur mit dem Elektronenmikroskop sehen.',ok:false,h:'Das gilt nur für feine Strukturen im Inneren. Den Umriss eines Bakteriums zeigt auch ein Lichtmikroskop.'}]);
+  opts.forEach(o=>{const b=document.createElement('button');b.className='opt';b.textContent=o.t;b.addEventListener('click',()=>{const f=$('#t1cFb');if(o.ok){$$('#t1cOpts .opt').forEach(x=>x.disabled=true);b.classList.add('right');f.className='fb ok';f.innerHTML='<b>Richtig.</b> Das Bild war etwa ein halber Millimeter groß, also mehr als fünfmal so groß wie die Grenze des Auges.';t1['3']=true;chk1()}else{b.classList.add('wrong');f.className='fb bad';f.innerHTML='<b>Noch nicht.</b> '+o.h}});$('#t1cOpts').appendChild(b)});
+});
+function chk1(){if(t1['1']&&t1['2']&&t1['3'])markDone('s1')}
+
+/* ===== Station 2: Formen ===== */
+const C={cell:'#E3EED6',line:'#2C5F2D',flag:'#56644F'};
+function coccus(x,y,r){return `<circle cx="${x}" cy="${y}" r="${r}" fill="${C.cell}" stroke="${C.line}" stroke-width="2.4"/>`}
+function flagFrom(x,y,ang,len){const a=ang*Math.PI/180,dx=Math.cos(a),dy=Math.sin(a),nx=-dy,ny=dx;let d=`M${x.toFixed(1)} ${y.toFixed(1)}`;for(let i=1;i<=4;i++){const t=len*i/4,s=(i%2?1:-1)*5;d+=` Q${(x+dx*(t-len/8)+nx*s).toFixed(1)} ${(y+dy*(t-len/8)+ny*s).toFixed(1)} ${(x+dx*t).toFixed(1)} ${(y+dy*t).toFixed(1)}`}return `<path d="${d}" fill="none" stroke="${C.flag}" stroke-width="1.8" stroke-linecap="round"/>`}
+function rod(x,y,ang,flag){const L=48,W=16;let s=`<g transform="translate(${x} ${y}) rotate(${ang})">`;if(flag)s+=flagFrom(L/2,0,0,34)+flagFrom(-L/2,0,180,30);s+=`<rect x="${-L/2}" y="${-W/2}" width="${L}" height="${W}" rx="${W/2}" fill="${C.cell}" stroke="${C.line}" stroke-width="2.4"/></g>`;return s}
+function spiral(x,y,ang,flag){let d='';const n=3.5,L=70,A=9;for(let i=0;i<=40;i++){const t=i/40,px=-L/2+t*L,py=Math.sin(t*n*2*Math.PI)*A;d+=(i?' L':'M')+px.toFixed(1)+' '+py.toFixed(1)}let s=`<g transform="translate(${x} ${y}) rotate(${ang})">`;if(flag)s+=flagFrom(L/2,0,-10,26)+flagFrom(L/2,0,10,26)+flagFrom(-L/2,0,180,24);s+=`<path d="${d}" fill="none" stroke="${C.line}" stroke-width="9" stroke-linecap="round"/><path d="${d}" fill="none" stroke="${C.cell}" stroke-width="4.6" stroke-linecap="round"/></g>`;return s}
+function formSVG(shape,arr,flag){
+  let s='<svg viewBox="0 0 220 140" role="img" aria-label="Bakterienform">';
+  if(shape==='kugel'){
+    const r=10;let P=[];
+    if(arr==='einzeln')P=[[55,45],[150,40],[100,95],[175,105],[40,110]];
+    else if(arr==='paare'){[[50,40,15],[140,35,-20],[95,100,40],[170,100,0]].forEach(p=>{const a=p[2]*Math.PI/180,dx=Math.cos(a)*r*0.95,dy=Math.sin(a)*r*0.95;P.push([p[0]-dx,p[1]-dy],[p[0]+dx,p[1]+dy])})}
+    else if(arr==='ketten'){let x=22,y=90,a=-20;for(let i=0;i<9;i++){P.push([x,y]);a+=(i<4?6:-8);x+=Math.cos(a*Math.PI/180)*19;y+=Math.sin(a*Math.PI/180)*19}}
+    else if(arr==='trauben')P=[[95,55],[114,55],[133,55],[86,72],[105,72],[124,72],[143,72],[95,89],[114,89],[133,89],[105,106],[124,106],[76,55],[114,38]];
+    if(flag){const q=P.reduce((m,p)=>p[1]>m[1]?p:m,P[0]);s+=flagFrom(q[0],q[1]+r,90,24)}
+    P.forEach(p=>s+=coccus(p[0],p[1],r));
+  } else if(shape==='staebchen'){s+=rod(60,45,-15,flag)+rod(155,50,20,flag)+rod(105,105,5,flag)}
+  else if(shape==='schraube'){s+=spiral(75,45,-10,flag)+spiral(140,100,8,flag)}
+  return s+'</svg>';
+}
+// Info-Karten
+[['kugel','einzeln','Kugelbakterien','Kokken (griech. kokkos = Beere, Korn)'],['staebchen','','Stäbchen','auch Bazillen (lat. bacillus = Stäbchen)'],['schraube','','Schraubenbakterien','Spirillen (lat. spira = Windung)']].forEach(f=>{const d=document.createElement('div');d.className='formcard';d.innerHTML=formSVG(f[0],f[1],false)+`<b>${f[2]}</b><span class="small">${f[3]}</span>`;$('#formInfo').appendChild(d)});
+[['paare','Diplokokken','Paare (griech. diplos = doppelt)'],['ketten','Streptokokken','Ketten (griech. streptos = gewunden, Halskette)'],['trauben','Staphylokokken','Trauben (griech. staphyle = Weintraube)']].forEach(f=>{const d=document.createElement('div');d.className='formcard';d.innerHTML=formSVG('kugel',f[0],false)+`<b>${f[1]}</b><span class="small">${f[2]}</span>`;$('#arrInfo').appendChild(d)});
+// Baukasten
+const ORDERS=shuffle([
+ {n:'<i>Bacillus cereus</i> aus dem gekochten Reis: ein bewegliches Stäbchenbakterium',s:'staebchen',a:null,f:true},
+ {n:'<i>Staphylococcus aureus</i>: unbewegliche Staphylokokken',s:'kugel',a:'trauben',f:false},
+ {n:'<i>Streptococcus pyogenes</i>: unbewegliche Streptokokken',s:'kugel',a:'ketten',f:false},
+ {n:'Pneumokokken: unbewegliche Diplokokken',s:'kugel',a:'paare',f:false},
+ {n:'<i>Spirillum</i>: ein bewegliches Schraubenbakterium',s:'schraube',a:null,f:true}
+]);
+let bi=0,bs={s:'kugel',a:'einzeln',f:false};
+const SH=[['kugel','Kugel'],['staebchen','Stäbchen'],['schraube','Schraube']],AR=[['einzeln','einzeln'],['paare','Paare'],['ketten','Ketten'],['trauben','Trauben']],FL=[[false,'ohne Geißeln'],[true,'mit Geißeln']];
+function seg(el,list,key){el.innerHTML='';list.forEach(([v,t])=>{const b=document.createElement('button');b.className='btn';b.textContent=t;b.setAttribute('aria-pressed',bs[key]===v?'true':'false');if(key==='a'&&bs.s!=='kugel')b.disabled=true;b.addEventListener('click',()=>{bs[key]=v;if(key==='s'&&v==='kugel'&&!bs.a)bs.a='einzeln';renderBuild()});el.appendChild(b)})}
+function renderBuild(){
+  if(bi>=ORDERS.length){$('#buildOrder').innerHTML='Alle fünf Bakterien richtig gebaut!';$('#buildCheck').disabled=true;$('#buildCount').textContent='5/5';unlockId();return}
+  $('#buildOrder').innerHTML='Gesucht: '+ORDERS[bi].n;
+  seg($('#cShape'),SH,'s');seg($('#cArr'),AR,'a');seg($('#cFlag'),FL,'f');
+  $('#buildPrev').innerHTML=formSVG(bs.s,bs.s==='kugel'?bs.a:'',bs.f);
+  $('#buildCount').textContent=`${bi}/${ORDERS.length} gebaut`;
+}
+$('#buildCheck').addEventListener('click',()=>{
+  const o=ORDERS[bi],f=$('#buildFb');let err=[];
+  if(bs.s!==o.s)err.push('Die Grundform stimmt noch nicht. Schau dir die Info zu den Grundformen noch einmal an.');
+  else if(o.s==='kugel'&&bs.a!==o.a)err.push('Die Anordnung passt noch nicht zum Namen. Was bedeutet die Vorsilbe?');
+  if(bs.f!==o.f)err.push(o.f?'Das Bakterium soll beweglich sein. Welche Struktur braucht es dafür?':'Das Bakterium ist unbeweglich. Braucht es dann Geißeln?');
+  if(err.length){f.className='fb bad';f.innerHTML='<b>Noch nicht.</b> '+err.join(' ');$('#buildPrev').classList.remove('shake');void $('#buildPrev').offsetWidth;$('#buildPrev').classList.add('shake')}
+  else{f.className='fb ok';f.innerHTML='<b>Richtig gebaut!</b> '+o.n.replace(/<[^>]+>/g,'')+'.';bi++;bs={s:'kugel',a:'einzeln',f:false};renderBuild()}
+});
+renderBuild();
+// Zuordnung
+const IDS=[['kugel','paare','Diplokokken'],['kugel','ketten','Streptokokken'],['kugel','trauben','Staphylokokken'],['staebchen','','Stäbchen'],['schraube','','Spirillen']];
+let idSel=null,idDone={};
+const idImgs=shuffle(IDS.map((_,i)=>i)),idNames=shuffle(IDS.map((_,i)=>i));
+function unlockId(){$('#idLock').hidden=true;$('#idTask').classList.remove('locked');renderId()}
+function renderId(){
+  $('#idChips').innerHTML='';idNames.forEach(i=>{const b=document.createElement('button');b.className='chip'+(idDone[i]?' used':'');b.textContent=IDS[i][2];b.disabled=!!idDone[i];b.setAttribute('aria-pressed',idSel===i?'true':'false');b.addEventListener('click',()=>{idSel=idSel===i?null:i;renderId()});$('#idChips').appendChild(b)});
+  $('#idGrid').innerHTML='';idImgs.forEach((i,k)=>{const d=document.createElement('button');d.className='slot'+(idDone[i]?' ok':'')+(idSel!==null&&!idDone[i]?' ready':'');d.innerHTML=formSVG(IDS[i][0],IDS[i][1],false)+`<span class="ans">${idDone[i]?IDS[i][2]:'Bild '+(k+1)}</span>`;d.setAttribute('aria-label','Bild '+(k+1));
+    d.addEventListener('click',()=>{if(idDone[i])return;const f=$('#idFb');if(idSel===null){f.className='fb';f.textContent='Tippe zuerst auf einen Namen.';return}
+      if(idSel===i){idDone[i]=true;idSel=null;f.className='fb ok';f.innerHTML='<b>Richtig.</b>';renderId();if(Object.keys(idDone).length===IDS.length){f.innerHTML='<b>Alle Formen richtig zugeordnet.</b>';markDone('s2')}}
+      else{f.className='fb bad';f.innerHTML=`<b>Noch nicht.</b> „${IDS[idSel][2]}“ passt nicht zu diesem Bild.`;d.classList.remove('shake');void d.offsetWidth;d.classList.add('shake')}});$('#idGrid').appendChild(d)});
+}
+$('#idTask').classList.add('locked');
+
+/* ===== Station 3: Labor ===== */
+const STEPS=[
+ 'Einen kleinen Tropfen mit Wasser verdünnten Joghurt auf einen Objektträger geben und dünn ausstreichen.',
+ 'Den Ausstrich an der Luft vollständig trocknen lassen.',
+ 'Hitzefixieren: den Objektträger mit der Schichtseite nach oben dreimal kurz durch die Brennerflamme ziehen.',
+ 'Den Ausstrich mit Methylenblau-Lösung beträufeln und etwa eine Minute einwirken lassen.',
+ 'Den überschüssigen Farbstoff vorsichtig mit Wasser abspülen und den Objektträger trocknen lassen.',
+ 'Mikroskopieren: mit dem kleinsten Objektiv beginnen und scharf stellen.'
+];
+let stepOrder=shuffle(STEPS.map((_,i)=>i)),seq=[];
+function renderSteps(){
+  $('#stepPool').innerHTML='';stepOrder.forEach(i=>{const b=document.createElement('button');b.className='stepbtn'+(seq.includes(i)?' picked':'');b.innerHTML=`<span class="n">•</span><span>${STEPS[i]}</span>`;b.disabled=seq.includes(i);b.addEventListener('click',()=>{seq.push(i);renderSteps()});$('#stepPool').appendChild(b)});
+  $('#stepSeq').innerHTML=seq.length?seq.map((i,k)=>`<div class="stepbtn"><span class="n">${k+1}</span><span>${STEPS[i]}</span></div>`).join(''):'<p class="small muted">Deine Reihenfolge erscheint hier.</p>';
+}
+$('#stepReset').addEventListener('click',()=>{seq=[];$('#stepFb').className='fb';$('#stepFb').textContent='';renderSteps()});
+let stepsOk=false;
+$('#stepCheck').addEventListener('click',()=>{
+  const f=$('#stepFb');
+  if(seq.length<STEPS.length){f.className='fb bad';f.textContent='Ordne zuerst alle sechs Schritte.';return}
+  const firstWrong=seq.findIndex((v,k)=>v!==k);
+  if(firstWrong<0){f.className='fb ok';f.innerHTML='<b>Richtig!</b> Jetzt kannst du den Ausstrich mikroskopieren.';stepsOk=true;$('#scopeLock').hidden=true;$('#scopeTask').classList.remove('locked');drawScope()}
+  else{f.className='fb bad';f.innerHTML=`<b>Noch nicht.</b> Ab Schritt ${firstWrong+1} stimmt die Reihenfolge nicht. Tipp: Farbe hält nur auf einem trockenen, fixierten Ausstrich.`;}
+});
+renderSteps();
+$('#scopeTask').classList.add('locked');$('#seeTask').classList.add('locked');$('#flawTask').classList.add('locked');
+
+// Präparat (Welt in µm, gekachelt)
+function rng(seed){return()=>{seed=(seed*1664525+1013904223)%4294967296;return seed/4294967296}}
+function makeSpecimen(seed,dens){
+  const r=rng(seed),T=300,rods=[],chains=[],blobs=[];
+  for(let i=0;i<Math.round(120*dens);i++)rods.push({x:r()*T,y:r()*T,l:4+r()*5,a:r()*Math.PI});
+  for(let i=0;i<Math.round(80*dens);i++){let x=r()*T,y=r()*T,a=r()*Math.PI*2;const n=3+Math.floor(r()*7),pts=[];for(let k=0;k<n;k++){pts.push([x,y]);a+=(r()-.5)*.6;x+=Math.cos(a)*1.05;y+=Math.sin(a)*1.05}chains.push(pts)}
+  for(let i=0;i<Math.round(40*dens);i++){const cx=r()*T,cy=r()*T,rad=2+r()*8,pts=[];for(let k=0;k<9;k++){const t=k/9*Math.PI*2,rr=rad*(.7+r()*.5);pts.push([cx+Math.cos(t)*rr,cy+Math.sin(t)*rr])}blobs.push(pts)}
+  return {T,rods,chains,blobs};
+}
+const SPEC=makeSpecimen(20250,2.6);
+function renderSpecimen(cv,spec,V,opt){
+  opt=opt||{};const ctx=cv.getContext('2d'),S=cv.width,ppu=V/100*1.2,T=spec.T;
+  ctx.fillStyle=opt.bg||'#F2F6F9';ctx.fillRect(0,0,S,S);
+  const view=S/ppu,cx=150,cy=150,x0=cx-view/2,y0=cy-view/2;
+  const alpha=opt.alpha??0.92,col=`rgba(43,76,155,${alpha})`,blobCol=`rgba(90,120,190,${(opt.blobAlpha??0.18)})`;
+  const k0=Math.floor(x0/T)-1,k1=Math.floor((x0+view)/T)+1,l0=Math.floor(y0/T)-1,l1=Math.floor((y0+view)/T)+1;
+  const tx=x=>(x-x0)*ppu,ty=y=>(y-y0)*ppu;
+  for(let k=k0;k<=k1;k++)for(let l=l0;l<=l1;l++){
+    const ox=k*T,oy=l*T;
+    ctx.fillStyle=blobCol;spec.blobs.forEach(b=>{ctx.beginPath();b.forEach((p,i)=>{const X=tx(p[0]+ox),Y=ty(p[1]+oy);i?ctx.lineTo(X,Y):ctx.moveTo(X,Y)});ctx.closePath();ctx.fill()});
+    ctx.strokeStyle=col;ctx.lineCap='round';ctx.lineWidth=Math.max(0.6,0.9*ppu);
+    spec.rods.forEach(r=>{const X=tx(r.x+ox),Y=ty(r.y+oy);if(X<-60||Y<-60||X>S+60||Y>S+60)return;const dx=Math.cos(r.a)*r.l/2*ppu,dy=Math.sin(r.a)*r.l/2*ppu;ctx.beginPath();ctx.moveTo(X-dx,Y-dy);ctx.lineTo(X+dx,Y+dy);ctx.stroke()});
+    ctx.fillStyle=col;spec.chains.forEach(c=>{const X=tx(c[0][0]+ox),Y=ty(c[0][1]+oy);if(X<-60||Y<-60||X>S+60||Y>S+60)return;c.forEach(p=>{ctx.beginPath();ctx.arc(tx(p[0]+ox),ty(p[1]+oy),Math.max(0.5,0.5*ppu),0,Math.PI*2);ctx.fill()})});
+  }
+}
+const OBJ=[4,10,40,100];
+let obj=4,focused={},best={};OBJ.forEach(o=>best[o]=35+Math.floor(Math.random()*40));
+function drawScope(){
+  const cv=$('#scopeCv');const V=obj*10;renderSpecimen(cv,SPEC,V);
+  const d=Math.abs(+$('#focus').value-best[obj]);cv.style.filter=`blur(${Math.min(9,d/4).toFixed(2)}px)`;
+  $('#magTxt').innerHTML=`Gesamtvergrößerung: 10 × ${obj} = <b>${V}-fach</b>${obj===100?' (Ölimmersion)':''}`;
+  $('#objBtns').innerHTML='';OBJ.forEach(o=>{const b=document.createElement('button');b.className='btn';b.textContent=o+'×';b.setAttribute('aria-pressed',o===obj?'true':'false');b.addEventListener('click',()=>setObj(o));$('#objBtns').appendChild(b)});
+}
+function setObj(o){
+  const f=$('#scopeFb');const idx=OBJ.indexOf(o),cur=OBJ.indexOf(obj);
+  if(idx>cur){for(let k=0;k<idx;k++){if(!focused[OBJ[k]]){f.className='fb bad';f.innerHTML=`<b>Halt!</b> Stelle zuerst mit dem ${OBJ[k]}er-Objektiv scharf. Denk an die Mikroskopierregel.`;return}}}
+  obj=o;f.className='fb';f.textContent='';drawScope();
+}
+$('#focus').addEventListener('input',()=>{
+  drawScope();const d=Math.abs(+$('#focus').value-best[obj]),f=$('#scopeFb');
+  if(d<=3&&!focused[obj]){focused[obj]=true;f.className='fb ok';f.innerHTML=obj>=40?'<b>Scharf!</b> Betrachte die Bakterien genau.':`<b>Scharf!</b> Wechsle jetzt zum nächstgrößeren Objektiv.`;if(obj>=40&&$('#seeTask').classList.contains('locked')){$('#seeLock').hidden=true;$('#seeTask').classList.remove('locked')}}
+});
+// Formen erkennen
+const SEE=shuffle([{t:'stäbchenförmige Bakterien',ok:true},{t:'Kugelbakterien in Ketten',ok:true},{t:'Kugelbakterien in Trauben',ok:false},{t:'schraubenförmige Bakterien',ok:false}]);
+SEE.forEach((s,i)=>{const l=document.createElement('label');l.innerHTML=`<input type="checkbox" id="see${i}"> ${s.t}`;$('#seeChecks').appendChild(l)});
+$('#seeCheck').addEventListener('click',()=>{
+  const f=$('#seeFb');const wrong=SEE.filter((s,i)=>$('#see'+i).checked!==s.ok);
+  if(!wrong.length){f.className='fb ok';f.innerHTML='<b>Richtig!</b> Im Joghurt findest du Stäbchen und Streptokokken, also Kugelbakterien in Ketten.';$('#flawLock').hidden=true;$('#flawTask').classList.remove('locked');renderFlaws()}
+  else{f.className='fb bad';f.innerHTML='<b>Noch nicht.</b> Schau bei 400- oder 1000-facher Vergrößerung noch einmal genau hin. Liegen die Kugeln einzeln, in Ketten oder in Haufen?'}
+});
+// Fehlerquellen
+const FLAWS=[
+ {k:'dick',cause:'Der Ausstrich war zu dick.',fix:'Nur einen kleinen, mit Wasser verdünnten Tropfen verwenden und dünn ausstreichen.'},
+ {k:'pale',cause:'Die Färbung fehlt oder war zu kurz.',fix:'Methylenblau etwa eine Minute einwirken lassen und erst dann abspülen.'},
+ {k:'blur',cause:'Das Bild wurde nicht scharf gestellt.',fix:'Mit dem kleinsten Objektiv beginnen und bei jeder Vergrößerung mit dem Triebrad nachstellen.'}
+];
+let flawOk={};const flawOrder=shuffle([0,1,2]);let flawsRendered=false;
+function renderFlaws(){
+  if(flawsRendered)return;flawsRendered=true;
+  flawOrder.forEach((fi,k)=>{
+    const F=FLAWS[fi],d=document.createElement('div');d.className='flaw';
+    d.innerHTML=`<b>Präparat ${String.fromCharCode(65+k)}</b><div class="lens"><canvas width="300" height="300"></canvas></div><div class="opts"></div><div class="fb small"></div>`;
+    $('#flaws').appendChild(d);const cv=$('canvas',d);
+    if(F.k==='dick'){renderSpecimen(cv,makeSpecimen(777,10),400,{blobAlpha:.55});const c=cv.getContext('2d');c.fillStyle='rgba(30,50,110,.35)';c.fillRect(0,0,300,300)}
+    if(F.k==='pale'){renderSpecimen(cv,SPEC,400,{alpha:.07,blobAlpha:.05,bg:'#F4F6F7'})}
+    if(F.k==='blur'){renderSpecimen(cv,SPEC,400);cv.style.filter='blur(4px)'}
+    shuffle(FLAWS.map((_,i)=>i)).forEach(ci=>{const b=document.createElement('button');b.className='opt';b.textContent=FLAWS[ci].cause;b.addEventListener('click',()=>{const fb=$('.fb',d);if(ci===fi){$$('.opt',d).forEach(x=>x.disabled=true);b.classList.add('right');d.classList.add('ok');fb.className='fb small ok';fb.innerHTML='<b>Richtig.</b> Vermeiden: '+F.fix;flawOk[fi]=true;if(Object.keys(flawOk).length===3)markDone('s3')}else{b.classList.add('wrong');fb.className='fb small bad';fb.textContent='Vergleiche mit deinem gelungenen Präparat: Was ist hier anders?'}});$('.opts',d).appendChild(b)});
+  });
+}
+
+/* ===== Station 4: Gutachten ===== */
+const QS=shuffle([
+ {q:'Ein Okular vergrößert 10-fach, das Objektiv 40-fach. Wie groß ist die Gesamtvergrößerung?',o:['400-fach','50-fach','4000-fach','40-fach'],e:'Die Vergrößerungen werden multipliziert: 10 × 40 = 400.'},
+ {q:'Warum kann man Plasmide im Lichtmikroskop nicht erkennen?',o:['Sie sind kleiner als die Auflösungsgrenze von etwa 0,2 µm.','Sie lassen sich nicht mit Methylenblau färben.','Sie liegen außerhalb der Zellwand.','Man müsste nur ein stärkeres Okular verwenden.'],e:'Unterhalb der Auflösungsgrenze verschwimmen Strukturen. Ein stärkeres Okular macht das Bild nur größer, aber nicht schärfer.'},
+ {q:'Wie sehen Staphylokokken aus?',o:['kugelförmige Bakterien, die wie Trauben zusammenhängen','kugelförmige Bakterien in Ketten','stäbchenförmige Bakterien in Paaren','schraubenförmige Bakterien mit Geißeln'],e:'Griech. staphyle = Weintraube.'},
+ {q:'Warum färbt man einen Joghurt-Ausstrich mit Methylenblau?',o:['Die fast durchsichtigen Bakterien heben sich dann deutlich vom Hintergrund ab.','Der Farbstoff macht die Zellwand durchsichtig.','Der Farbstoff vergrößert die Bakterien.','Der Farbstoff klebt die Bakterien am Objektträger fest.'],e:'Die Färbung erhöht den Kontrast. Festgeklebt werden die Bakterien beim Hitzefixieren.'},
+ {q:'Warum beginnt man beim Mikroskopieren mit dem kleinsten Objektiv?',o:['Das Sichtfeld ist groß, man findet das Präparat leichter und kann leichter scharf stellen.','Das kleinste Objektiv zeigt die meisten Einzelheiten.','Nur mit dem kleinsten Objektiv ist die Färbung sichtbar.','Mit dem kleinsten Objektiv sieht man die Bakterien am deutlichsten.'],e:'Erst wenn das Präparat gefunden und scharf ist, wechselt man zur stärkeren Vergrößerung.'}
+]);
+let qi=0,qok=0;
+function renderQ(){
+  const box=$('#quiz');
+  if(qi>=QS.length){
+    const pass=qok>=4;
+    box.innerHTML=`<div class="qtext">${qok} von ${QS.length} Fragen richtig</div><p>${pass?'Die Royal Society nimmt dein Gutachten an!':'Für die Annahme brauchst du mindestens vier richtige Antworten. Lies die Infos in den Prüfaufträgen noch einmal und versuche es erneut.'}</p><div class="row"><button class="btn primary" id="qAgain">Noch einmal</button></div>`;
+    $('#qAgain').addEventListener('click',()=>{qi=0;qok=0;renderQ()});
+    if(window.MO_SCORM)MO_SCORM.score(qok,QS.length);
+    if(pass)markDone('s4');return;
+  }
+  const Q=QS[qi],order=shuffle(Q.o.map((_,i)=>i));
+  box.innerHTML=`<p class="small muted">Frage ${qi+1} von ${QS.length}</p><div class="qtext">${Q.q}</div><div class="opts">${order.map(i=>`<button class="opt" data-i="${i}">${Q.o[i]}</button>`).join('')}</div><div class="fb" id="qFb"></div><div class="row"><button class="btn primary" id="qNext" hidden>${qi+1<QS.length?'Nächste Frage':'Auswertung'}</button></div>`;
+  $$('.opt',box).forEach(b=>b.addEventListener('click',()=>{const ok=+b.dataset.i===0;if(ok)qok++;$$('.opt',box).forEach(x=>{x.disabled=true;if(+x.dataset.i===0)x.classList.add('right')});if(!ok)b.classList.add('wrong');const f=$('#qFb');f.className='fb '+(ok?'ok':'bad');f.innerHTML=`<b>${ok?'Richtig.':'Leider falsch.'}</b> ${Q.e}`;$('#qNext').hidden=false;$('#qNext').focus()}));
+  $('#qNext').addEventListener('click',()=>{qi++;renderQ()});
+}
+renderQ();
+show(sections.some(s=>s.id===startTab)?startTab:'s1',false);
+})();
+</script>
+</body>
+</html>
