@@ -262,6 +262,13 @@ footer button{background:none;border:1px solid var(--line);border-radius:14px;pa
 .bubble1{animation:rise 2.4s linear 3 both}
 @media (prefers-reduced-motion:reduce){.anim,.bubble,.bubble1,.frame .fig{animation:none!important}}
 .cert h2,.card h3{overflow-wrap:break-word;hyphens:auto}
+
+/* Legende der Feldtypen auf der Startseite */
+.flegend{display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px;margin:16px 0 6px;font-size:15px;color:var(--muted,#5B6B7C)}
+.flegend .fl{display:inline-flex;align-items:center;gap:8px;padding:4px 14px 4px 4px;border-radius:999px}
+.flegend .fl .badge{width:30px;height:30px}.flegend .fl .badge .ico{width:17px;height:17px}
+.flegend .fl .kicker{font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:13px;margin:0}
+.flegend .merke{box-shadow:2px 2px 0 rgba(0,0,0,.12)}
 </style></head>
 <body>
 <header class="top"><div class="wrap">
@@ -429,6 +436,13 @@ var PWHASH="448989a7954529824a96ea475b83786de8b7cd04f9287e4b84a24f1f144d9f85";
     var intro = el("div", "card story blk intro");
     intro.innerHTML = '<div class="badge">' + I[LOGO] + '</div><div class="bd">' + sceneHtml(C.INTRO.scene) + '<div class="kicker" style="color:var(--forest)">' + LB.auftrag + '</div><h2>' + C.INTRO.title + "</h2><p>" + C.INTRO.story + '</p><p class="note">' + C.INTRO.hinweis + "</p></div>";
     app.appendChild(intro);
+    // Legende der Feldtypen (Startseite)
+    var lg = el("div", "flegend");
+    lg.innerHTML = '<span class="fl-t">' + (LB.felder || "So erkennst du die Felder:") + "</span>" +
+      [["bgr", "book", "Hintergrund"], ["info", "info", "Info"], ["ex", "pencil", "Übung"], ["merke", "star", "Merke"]].map(function (f) {
+        return '<span class="fl ' + f[0] + '"><span class="badge">' + I[f[1]] + '</span><span class="kicker">' + f[2] + "</span></span>";
+      }).join("");
+    app.appendChild(lg);
     var h = el("h3", null, LB.karte); h.style.marginTop = "18px"; app.appendChild(h);
     var map = el("div", "map");
     ST.forEach(function (s, i) {
